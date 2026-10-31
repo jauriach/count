@@ -1,0 +1,101 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Compteur de signes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Une colonne : la zone de texte, puis le compte en gros et la coche. */
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --fg: #22211d;
+  --muted: #6b6860;
+  --line: #d9d6cc;
+  --accent: #2f4a7a;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17181b; --surface: #202226; --fg: #ebe9e3; --muted: #9a978f; --line: #34363c; --accent: #9db5e3;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17181b; --surface: #202226; --fg: #ebe9e3; --muted: #9a978f; --line: #34363c; --accent: #9db5e3;
+  color-scheme: dark;
+}
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--serif);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px;
+}
+main { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1 { font-size: 1.5rem; font-weight: 600; margin: 0; text-wrap: balance; }
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 220px;
+  resize: vertical;
+  padding: 14px 16px;
+  font: 1.0625rem/1.55 var(--serif);
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+.bar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px 24px; }
+.count { display: flex; align-items: baseline; gap: 8px; }
+#n { font: 500 2.5rem/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--accent); }
+.unit { color: var(--muted); font-size: 1rem; }
+label { display: inline-flex; align-items: center; gap: 8px; font-size: 1rem; cursor: pointer; user-select: none; }
+input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+input[type="checkbox"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.alt { color: var(--muted); font-size: 0.875rem; margin: 0; font-variant-numeric: tabular-nums; }
+</style>
+
+<main>
+  <h1>Compteur de signes</h1>
+  <textarea id="txt" spellcheck="false" aria-label="Texte à compter">Oracle, génie, confidente, médecin, juge, et bientôt maîtresse du monde, l’IA ? Méfions-nous des titres trop vite dégainés. L’IA est d’abord un ensemble de techniques, qu’il faut regarder de près, sans céder ni à la transe collective ni à la peur panique. Notre humanité en sortira-t-elle diminuée ?</textarea>
+  <div class="bar">
+    <div class="count" aria-live="polite"><span id="n">0</span><span class="unit" id="unit">signes</span></div>
+    <label><input type="checkbox" id="spaces" checked> Espaces comprises</label>
+  </div>
+  <p class="alt" id="alt"></p>
+</main>
+
+<script>
+const txt = document.getElementById('txt');
+const box = document.getElementById('spaces');
+const n = document.getElementById('n');
+const unit = document.getElementById('unit');
+const alt = document.getElementById('alt');
+
+function counts(s) {
+  const noBreaks = s.replace(/[\r\n]/g, '');
+  const withSpaces = Array.from(noBreaks).length;
+  const without = Array.from(noBreaks.replace(/[\s  ]/g, '')).length;
+  return { withSpaces, without };
+}
+function render() {
+  const c = counts(txt.value);
+  const on = box.checked;
+  n.textContent = on ? c.withSpaces : c.without;
+  unit.textContent = (on ? c.withSpaces : c.without) > 1 ? 'signes' : 'signe';
+  alt.textContent = on ? `${c.without} sans espaces` : `${c.withSpaces} espaces comprises`;
+}
+txt.addEventListener('input', render);
+box.addEventListener('change', () => {
+  try { localStorage.setItem('espaces', box.checked ? '1' : '0'); } catch (e) {}
+  render();
+});
+try { const v = localStorage.getItem('espaces'); if (v !== null) box.checked = v === '1'; } catch (e) {}
+render();
+</script>
+
+</body></html>
